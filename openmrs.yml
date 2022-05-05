@@ -1,0 +1,38 @@
+---
+- name: installing openmrs playbook
+  hosts: all
+  become: yes
+  tasks:
+    - name: installing java 
+      ansible.builtin.apt:
+        update_cache: yes
+        name: openjdk-8-jdk
+        state: present
+    - name: Ensure group "mysql" exists
+      group:
+        name: mysql
+        state: present    
+    - name: Add the user 'mysql' with a mysql group name
+      ansible.builtin.user:
+        name: mysql
+        group: mysql
+    - name: Download mysql
+      get_url:
+        url: https://dev.mysql.com/get/Downloads/MySQL-5.6/mysql-5.6.46-linux-glibc2.12-x86_64.tar.gz
+        dest: /tmp/mysql-5.6.46-linux-glibc2.12-x86_64.tar.gz
+    - name: Extract .zip
+      ansible.builtin.unarchive:
+        src: /tmp/mysql-5.6.46-linux-glibc2.12-x86_64.tar.gz
+        dest: /tmp/mysql-5.6.46-linux-glibc2.12-x86_64
+        remote_src: yes    
+    - name: move mysql file to /usr/local/mysql
+      ansible.builtin.copy:
+        src: /tmp/mysql-5.6.46-linux-glibc2.12-x86_64
+        dest: /usr/local/mysql
+    - name: Recursively change ownership of a directory
+      ansible.builtin.file:
+        path: /usr/local/mysql
+        state: directory
+        recurse: yes
+        owner: mysql
+        group: mysql 
